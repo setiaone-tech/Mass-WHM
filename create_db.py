@@ -1,90 +1,117 @@
 import requests
+import base64
 
-# Konfigurasi WHM
-whm_host = "https://your-whm-server:2087"
-whm_user = "root"
-whm_token = "YOUR_API_TOKEN"
+print("Proses...")
+with open('list_domain_n.txt') as f:
+    data = f.readlines()
+f.close()
 
-# Detail database dan pengguna database baru
-db_details = {
-    "db_name": "newdatabase",
-    "db_user": "dbuser",
-    "db_password": "dbpassword"
-}
+with open('list_ip_n.txt') as f:
+    data_ip = f.readlines()
+f.close()
 
-def create_database(cpanel_user):
-    url = f"{whm_host}/json-api/cpanel"
-    headers = {
-        "Authorization": f"whm {whm_user}:{whm_token}"
-    }
+def create_db(user, ip):
+    # Informasi API
+    cpanel_url = f"https://{ip}:2083/execute/Mysql/create_database"
+    cpanel_user = user
+    cpanel_password = ""
+
+    # Nama database yang ingin dibuat
+    db_name = f"{cpanel_user}_DBNAME",
+
+    # Parameter untuk request
     payload = {
-        "cpanel_jsonapi_user": cpanel_user,
-        "cpanel_jsonapi_apiversion": "3",
-        "cpanel_jsonapi_module": "Mysql",
-        "cpanel_jsonapi_func": "createdb",
-        "name": db_details["db_name"]
+        "name": db_name
     }
 
-    response = requests.post(url, headers=headers, data=payload, verify=False)
-    response_data = response.json()
-    
-    if response.status_code == 200 and response_data['cpanelresult']['data'][0]['result']:
-        print(f"Database {db_details['db_name']} created successfully.")
-        return True
+    # Encode username dan password ke Base64
+    credentials = f"{cpanel_user}:{cpanel_password}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+        # Header untuk otentikasi Basic
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}"
+    }
+
+    # Mengirimkan request
+    response = requests.get(cpanel_url, headers=headers, data=payload, verify=False)
+
+    # Menampilkan hasil
+    if response.status_code == 200:
+        print("Database berhasil dibuat:", response.json())
     else:
-        print(f"Failed to create database: {response_data}")
-        return False
+        print("Gagal membuat database:", response.json())
 
-def create_db_user(cpanel_user):
-    url = f"{whm_host}/json-api/cpanel"
-    headers = {
-        "Authorization": f"whm {whm_user}:{whm_token}"
-    }
+def create_user (user, ip):
+    # Informasi API
+    cpanel_url = f"https://{ip}:2083/execute/Mysql/create_user"
+    cpanel_user = user
+    cpanel_password = ""
+
+    # Nama database yang ingin dibuat
+    db_name = f"{cpanel_user}_DBNAME",
+
+    # Parameter untuk request
     payload = {
-        "cpanel_jsonapi_user": cpanel_user,
-        "cpanel_jsonapi_apiversion": "3",
-        "cpanel_jsonapi_module": "Mysql",
-        "cpanel_jsonapi_func": "createuser",
-        "name": db_details["db_user"],
-        "password": db_details["db_password"]
+        "name": db_name,
+        "password": ""
     }
 
-    response = requests.post(url, headers=headers, data=payload, verify=False)
-    response_data = response.json()
+    # Encode username dan password ke Base64
+    credentials = f"{cpanel_user}:{cpanel_password}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
 
-    if response.status_code == 200 and response_data['cpanelresult']['data'][0]['result']:
-        print(f"Database user {db_details['db_user']} created successfully.")
-        return True
+        # Header untuk otentikasi Basic
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}"
+    }
+
+    # Mengirimkan request
+    response = requests.get(cpanel_url, headers=headers, data=payload, verify=False)
+
+    # Menampilkan hasil
+    if response.status_code == 200:
+        print("User berhasil dibuat:", response.json())
     else:
-        print(f"Failed to create database user: {response_data}")
-        return False
+        print("Gagal membuat User:", response.json())
 
-def set_db_privileges(cpanel_user):
-    url = f"{whm_host}/json-api/cpanel"
-    headers = {
-        "Authorization": f"whm {whm_user}:{whm_token}"
-    }
+def update_privileges(user, ip):
+    # Informasi API
+    cpanel_url = f"https://{ip}:2083/execute/Mysql/set_privileges_on_database"
+    cpanel_user = user
+    cpanel_password = ""
+
+    # Nama database yang ingin dibuat
+    db_name = f"{cpanel_user}_DBNAME",
+
+    # Parameter untuk request
     payload = {
-        "cpanel_jsonapi_user": cpanel_user,
-        "cpanel_jsonapi_apiversion": "3",
-        "cpanel_jsonapi_module": "Mysql",
-        "cpanel_jsonapi_func": "setprivileges",
-        "database": db_details["db_name"],
-        "user": db_details["db_user"],
+        "database": db_name,
+        "user": "",
         "privileges": "ALL PRIVILEGES"
     }
 
-    response = requests.post(url, headers=headers, data=payload, verify=False)
-    response_data = response.json()
+    # Encode username dan password ke Base64
+    credentials = f"{cpanel_user}:{cpanel_password}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
 
-    if response.status_code == 200 and response_data['cpanelresult']['data'][0]['result']:
-        print(f"Privileges set for user {db_details['db_user']} on database {db_details['db_name']}.")
-        return True
+        # Header untuk otentikasi Basic
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}"
+    }
+
+    # Mengirimkan request
+    response = requests.get(cpanel_url, headers=headers, data=payload, verify=False)
+
+    # Menampilkan hasil
+    if response.status_code == 200:
+        print("Berhasil memperbarui user:", response.json())
     else:
-        print(f"Failed to set privileges: {response_data}")
-        return False
+        print("Gagal memperbarui User:", response.json())
 
-if __name__ == "__main__":
-    cpanel_user = ''
-    if create_database(cpanel_user) and create_db_user(cpanel_user):
-        set_db_privileges(cpanel_user)
+print(f"{len(data)} Akun...")
+for i in range(len(data)-1):
+    user = data[i].replace('\n','')[:16]
+    ip = data_ip[i].replace('\n', '')
+    if create_db(user, ip) and create_user(user, ip):
+        update_privileges(user, ip)
