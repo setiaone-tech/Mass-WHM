@@ -111,7 +111,8 @@ def update_privileges(user, ip):
 
 print(f"{len(data)} Akun...")
 for i in range(len(data)-1):
-    user = data[i].replace('\n','')[:16]
+    user = data[i].split('.')[0]
+    user = user[:16]
     ip = data_ip[i].replace('\n', '')
     if create_db(user, ip) and create_user(user, ip):
         update_privileges(user, ip)
