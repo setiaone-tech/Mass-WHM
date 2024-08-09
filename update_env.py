@@ -10,6 +10,13 @@ def read_local_env_file(local_file_path):
         print(f"Error membaca file: {e}")
         return None
 
+def edit_file(content, user_db, name_db):
+    content = content.replace('DB_DATABASE=pbn', f'DB_DATABASE={name_db}_DBNAME')
+    content = content.replace('DB_USERNAME=root', f'DB_USERNAME={user_db}_DBNAME')
+    content = content.replace('DB_PASSWORD=', f'DB_PASSWORD=pbndb123!!!')
+    return content
+
+
 # Fungsi untuk menulis konten baru ke file .env
 def write_env_file(new_content, filename):
     write_url = f"{cpanel_url}/json-api/cpanel"
@@ -37,18 +44,17 @@ def write_env_file(new_content, filename):
 
 
 print("Proses...")
-with open('list_domain_fix.txt') as f:
+with open('list_domain_n.txt') as f:
     data = f.readlines()
 f.close()
 
-with open('list_ip_fix.txt') as f:
+with open('list_ip_n.txt') as f:
     data_ip = f.readlines()
 f.close()
 
 print(f"{len(data)} Akun...")
 for i in range(len(data)-1):
-    user = data[i].split('.')[0]
-    user = user[:16]
+    user = data[i].replace('\n', '')
     ip = data_ip[i].replace('\n', '')
     # Konfigurasi
     cpanel_url = f"https://{ip}:2083"  # Ganti dengan domain atau IP cPanel Anda
@@ -64,9 +70,11 @@ for i in range(len(data)-1):
         "Authorization": f"Basic {encoded_credentials}"
     }
 
-    destination_path = "/public_html/app/Http/Controllers/Backend/"  # Path tujuan di server cPanel
-    local_env_path = "C:/xampp/htdocs/laravel2/app/Http/Controllers/Backend/NewsPostController.php"
+    destination_path = "/public_html/"  # Path tujuan di server cPanel
+    local_env_path = "C:/xampp/htdocs/web1/env.txt" # Lokasi File Env
     env_content = read_local_env_file(local_env_path)
 
+    edit_content = edit_file(env_content, user, user)
+
     # Menulis konten baru ke file .env
-    write_env_file(env_content, 'NewsPostController.php')
+    write_env_file(edit_content, '.env')
