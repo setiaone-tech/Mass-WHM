@@ -7,7 +7,7 @@ def create_sub(url, subdo):
         username = username[:16]
     # Informasi otentikasi
     cpanel_user = username
-    cpanel_password = "Winwinwin828!"
+    cpanel_password = ""
     cpanel_host = f"https://{url}:2083"
 
     # URL API untuk membuat subdomain
